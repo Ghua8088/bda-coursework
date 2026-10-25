@@ -1,0 +1,3 @@
+Hello world hello MapReduce
+MapReduce is cool. Hadoop processes big data.
+Hello Hadoop hello world

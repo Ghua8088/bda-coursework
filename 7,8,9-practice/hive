@@ -1,0 +1,141 @@
+--q1
+/*
+1. Suppose we have a tuples with the schemas as Grades (University, courseID,
+studentID,
+grade) and Course (courseID, Department name, Course name, No of students
+enrolled) Dept (deptID, Name), and Student ( studentID, Name, CourseID, CGPA).
+Assume Course IDs are unique, but a courseID is available to all departments.
+Likewise, studentID’s are unique with department. Write commands to obtain results
+to the following queries using HIVE:
+a. Creating tables
+b. Insert tuples for each table.
+c. Sort the students according to their GPA course wise.
+d. Filter student with specific course and department.
+*/
+
+--a
+CREATE TABLE Grades (
+    University STRING,
+    courseID STRING,
+    studentID STRING,
+    grade STRING
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE TABLE Course (
+    courseID STRING,
+    Department_name STRING,
+    Course_name STRING,
+    No_of_students_enrolled INT
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE TABLE Dept (
+    deptID STRING,
+    Name STRING
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE TABLE Student (
+    studentID STRING,
+    Name STRING,
+    CourseID STRING,
+    CGPA FLOAT
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+--b
+
+INSERT INTO TABLE Dept VALUES 
+('D01', 'Computer Science'),
+('D02', 'Electronics');
+
+INSERT INTO TABLE Course VALUES 
+('C101', 'Computer Science', 'Data Structures', 60),
+('C102', 'Electronics', 'VLSI Design', 45);
+
+INSERT INTO TABLE Student VALUES 
+('S01', 'Rahul', 'C101', 3.8),
+('S02', 'Anita', 'C101', 4.8),
+('S03', 'Vikram', 'C102', 4.6);
+
+INSERT INTO TABLE Grades VALUES 
+('Anna Univ', 'C101', 'S01', 'A'),
+('Anna Univ', 'C101', 'S02', 'S'),
+('VTU', 'C102', 'S03', 'S');
+
+select * from Student order by CGPA desc;
+select s.studentID, s.Name ,s.CourseID,c.Department_name ,s.CGPA from Student s, join Course c on s.CourseID=c.CourseID where 
+s.CourseID='C101' and c.Department_name='Computer Science';
+
+--q2
+
+
+--a 
+CREATE TABLE Employee (
+    empID STRING,
+    Name STRING,
+    deptID STRING,
+    position STRING,
+    salary FLOAT,
+    date_of_joining STRING
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE TABLE Department (
+    deptID STRING,
+    dept_name STRING,
+    location STRING,
+    managerID STRING
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE TABLE Project (
+    projectID STRING,
+    project_name STRING,
+    deptID STRING,
+    budget FLOAT
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE TABLE Employee_Project (
+    empID STRING,
+    projectID STRING,
+    hours_worked INT
+) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+--b
+INSERT INTO TABLE Department VALUES 
+('D10', 'Sales', 'New York', 'E01'),
+('D20', 'Engineering', 'San Jose', 'E02');
+
+INSERT INTO TABLE Employee VALUES 
+('E01', 'John Doe', 'D10', 'Manager', 95000, '2018-05-12'),
+('E02', 'Jane Smith', 'D20', 'Manager', 105000, '2017-03-15'),
+('E03', 'Mark Taylor', 'D10', 'Sales Executive', 55000, '2021-01-10');
+
+INSERT INTO TABLE Project VALUES 
+('P101', 'Q3 Sales Boost', 'D10', 50000),
+('P102', 'System Redesign', 'D20', 120000);
+
+INSERT INTO TABLE Employee_Project VALUES 
+('E01', 'P101', 40),
+('E03', 'P101', 35),
+('E02', 'P102', 50);
+
+--c
+SELECT e.empID, e.Name, e.position, d.dept_name 
+FROM Employee e
+JOIN Department d ON e.deptID = d.deptID
+WHERE d.dept_name = 'Sales' AND e.position = 'Manager';
+
+--d
+SELECT ep.projectID, sum(ep.hours_worked) as total_hours from Employee_Project ep
+join Employee e on ep.empID = e.empID
+where e.deptID = 'D10'
+GROUP BY   ep.projectID;
+
+--q3
+--a same as q1
+
+--b
+SELECT g.University, AVG(c.No_of_students_enrolled) AS avg_students_per_course
+FROM Grades g
+JOIN Course c ON g.courseID = c.courseID
+GROUP BY g.University;
+
+--c 
+SELECT count(SELECT * from Student where CGPA >=4.5)/count(*) as fraction_high_cgpa from Student; 
